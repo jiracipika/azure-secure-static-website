@@ -5,8 +5,10 @@
 ## Goal
 Build an accessible static website and validate secure delivery and private origin connectivity.
 
-## Planned Azure architecture
-Azure Front Door Premium, WAF, private Azure Storage static origin, DNS, HTTPS and GitHub OIDC.
+## Architecture (implemented as code, gated off)
+Azure Front Door Premium (WAF Prevention, HTTP→HTTPS redirect) → Private Link →
+Storage `$web` static site (public access disabled, Entra-only auth).
+GitHub Actions deploys through an OIDC-federated identity pinned to `main`.
 
 ## GLM / ZCode — start here
 
@@ -25,20 +27,28 @@ terraform -chdir=infra/terraform init -backend=false -input=false
 terraform -chdir=infra/terraform validate
 ```
 
+All four pass locally (40 tests) and in CI; see docs/VALIDATION.md for the real
+output log, including the failures that were found and fixed.
+
 ## Source contents
 
 - `AGENTS.md`: enforceable GLM implementation contract
-- `docs/GLM_TASKS.md`: project-specific milestones
-- `docs/ARCHITECTURE.md`: intended topology and assumptions
-- `docs/SECURITY.md` / `docs/COSTS.md`: guardrails and financial control
-- `docs/VALIDATION.md`: log real evidence only
-- `docs/TEARDOWN.md`: future approved cleanup plan
-- `diagrams/architecture.mmd`: initial editable Mermaid model
-- `infra/terraform/`: safe offline provider root, no billable resources declared
+- `docs/GLM_TASKS.md`: project-specific milestones and current status
+- `docs/ARCHITECTURE.md`: topology, trust boundaries, deployment-path decision
+- `docs/SECURITY.md` / `docs/COSTS.md`: controls, guardrails, cost estimate (~$40/mo if deployed)
+- `docs/VALIDATION.md`: real evidence only — actual commands and results
+- `docs/TEARDOWN.md`: resource inventory + approved cleanup plan
+- `diagrams/architecture.mmd`: editable Mermaid model with trust boundaries
+- `infra/terraform/`: root module + `modules/static_site_storage`, `modules/frontdoor_premium`, `modules/github_oidc`; everything gated by `deploy_enabled=false`
+- `infra/terraform/environments/dev.tfvars`: offline-safe defaults
 - `.github/workflows/validate.yml`: offline validation, no deploy step
-- `tests/`: initial safety regression tests
-- `app/`: initial responsive demo website
+- `tests/`: scaffold gates + 40-test security/accessibility regression suite
+- `app/`: responsive accessible demo website (index + 404 page)
 
 ## Status and safety
 
-This is an initial engineering scaffold, **not** a deployed production system. Terraform currently defines no Azure services. The architecture modules, end-to-end tests and production readiness must be implemented and verified in subsequent GLM work. **Repository visibility must remain PUBLIC.** No credentials, secrets, real customer data, Terraform state or internal account identifiers may be committed.
+Terraform modules for the full target architecture are implemented and
+validated offline; **no Azure services are deployed** and `terraform plan`
+with defaults proposes zero resources. Repository visibility must remain
+**PUBLIC**. No credentials, secrets, real customer data, Terraform state or
+internal account identifiers may be committed.

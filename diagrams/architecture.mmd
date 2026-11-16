@@ -1,5 +1,21 @@
 flowchart LR
-  U[Users] --> A[Secure Static Website]
-  A --> C[Front Door Premium WAF -> Private Link -> Storage static website; GitHub Actions OIDC]
-  C --> M[Monitoring and validation]
-  GH[GitHub Actions offline checks] --> M
+  subgraph Internet["Trust boundary: public internet"]
+    U[Users over HTTPS only]
+  end
+
+  subgraph Edge["Trust boundary: Azure Front Door Premium"]
+    EP[Endpoint + custom domain] --> RT["Route: HTTP 308 to HTTPS,<br/>HttpsOnly forwarding, caching"]
+    WAF["WAF Prevention: DefaultRuleSet 2.1,<br/>BotManager 1.0, deny unsafe methods"] --> EP
+  end
+
+  subgraph Origin["Trust boundary: private origin"]
+    PL[Private Link] --> WEB["Storage $web static site<br/>public network access disabled,<br/>TLS 1.2, Entra-only auth"]
+  end
+
+  subgraph CI["Trust boundary: deployment network"]
+    GH[GitHub Actions main branch] -- "OIDC federated credential<br/>repo-scoped, no secrets" --> ARM[Entra ID / ARM control plane]
+    ARM -- "Storage Blob Data Contributor<br/>(this account only)" --> WEB
+  end
+
+  U --> WAF
+  RT --> PL
