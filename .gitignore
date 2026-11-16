@@ -3,7 +3,7 @@
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
-!environments/*.tfvars
+!**/environments/*.tfvars
 *.tfplan
 .env
 *.pem
