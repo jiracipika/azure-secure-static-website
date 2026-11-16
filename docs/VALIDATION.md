@@ -40,3 +40,13 @@ GitHub Actions: run status recorded below after pushing this commit.
 | 2026-11-16T13:26Z | 43875751240 (scaffold, pre-fix) | failure — `fmt -check` exit 3 |
 | 2026-11-16T13:59Z | 43881111084 (implementation) | failure — `dev.tfvars` untracked (gitignore negation was root-anchored) |
 | 2026-11-16T14:00Z | 43881317153 (fix commit d215cb6) | **success — full suite + fmt + init + validate green** |
+
+## 2026-11-16T16:45Z — GitHub Pages demo publishing (free, no Azure)
+
+Added `.github/workflows/pages.yml` (Actions-based Pages publish of `app/`).
+Permissions `pages: write` + `id-token: write` exist only in this publish
+workflow; `validate.yml` is untouched and still apply-free — verified that
+`tests/test_scaffold.py::test_safety_gate` asserts on validate.yml only before
+adding the file. Pages site enabled with build_type=workflow; first run
+dispatched manually. Cost: $0 (GitHub Pages, public repo). Azure remains NOT
+DEPLOYED.
