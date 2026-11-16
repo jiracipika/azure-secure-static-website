@@ -1,0 +1,5 @@
+flowchart LR
+  U[Users] --> A[Secure Static Website]
+  A --> C[Front Door Premium WAF -> Private Link -> Storage static website; GitHub Actions OIDC]
+  C --> M[Monitoring and validation]
+  GH[GitHub Actions offline checks] --> M
