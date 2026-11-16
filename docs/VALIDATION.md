@@ -38,4 +38,5 @@ GitHub Actions: run status recorded below after pushing this commit.
 | Date | Run | Conclusion |
 |---|---|---|
 | 2026-11-16T13:26Z | 43875751240 (scaffold, pre-fix) | failure — `fmt -check` exit 3 |
-| 2026-11-16T14:0xZ | post-implementation push | pending at write time |
+| 2026-11-16T13:59Z | 43881111084 (implementation) | failure — `dev.tfvars` untracked (gitignore negation was root-anchored) |
+| 2026-11-16T14:00Z | 43881317153 (fix commit d215cb6) | **success — full suite + fmt + init + validate green** |
