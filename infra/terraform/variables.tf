@@ -42,6 +42,18 @@ variable "waf_mode" {
   default     = "Prevention"
 }
 
+variable "dns_zone_name" {
+  description = "Public DNS zone for the custom domain. Empty (default) disables it; example.com is the RFC 2606 reserved test value."
+  type        = string
+  default     = ""
+}
+
+variable "custom_domain_subdomain" {
+  description = "Host label under dns_zone_name that serves the site."
+  type        = string
+  default     = "www"
+}
+
 variable "tags" {
   type = map(string)
   default = {

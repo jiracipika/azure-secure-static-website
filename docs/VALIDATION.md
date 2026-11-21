@@ -50,3 +50,42 @@ workflow; `validate.yml` is untouched and still apply-free — verified that
 adding the file. Pages site enabled with build_type=workflow; first run
 dispatched manually. Cost: $0 (GitHub Pages, public repo). Azure remains NOT
 DEPLOYED.
+
+## 2026-11-21T14:20Z — milestone: custom domain (weekly automation run)
+
+| Command | Result | Evidence |
+|---|---|---|
+| `python3 -m unittest discover -s tests` | **PASS** | `Ran 58 tests ... OK` (40 before + 18 new in `tests/test_custom_domain.py`) |
+| `terraform -chdir=infra/terraform fmt -check -recursive` | **PASS** | exit 0 (`FMT_OK`) |
+| `terraform -chdir=infra/terraform init -backend=false -input=false` | **PASS** | nested `../custom_domain` module installed |
+| `terraform -chdir=infra/terraform validate` | **PASS** | `Success! The configuration is valid.` (no warnings) |
+
+### Failures found and fixed during this run (real history)
+
+1. `validate` failed with **Cycle**: `module.frontdoor.azurerm_cdn_frontdoor_route`
+   ↔ `module.custom_domain` — a root-level two-way module wiring (route ←
+   custom-domain id; custom domain ← profile/endpoint outputs) is a Terraform
+   module-graph cycle even though the resource graph is acyclic. Fixed by
+   calling `modules/custom_domain` NESTED from `modules/frontdoor_premium`
+   (`source = "../custom_domain"`, `count = var.dns_zone_name != "" ? 1 : 0`).
+   Pinned by `tests/test_custom_domain.py::test_no_root_level_custom_domain_module`.
+2. `validate` warned `minimum_tls_version` is deprecated (removal in provider
+   v5.0) — switched to `minimum_version = "TLS12"` (both attributes verified
+   present in the 4.81.0 provider schema; enum values are not schema-exposed,
+   so TLS12 must be verified at first deployment).
+3. Offline schema extraction first read the wrong provider key
+   (`registry.terraform.io/azure/azurerm`; azurerm actually registers as
+   `hashicorp/azurerm`) — corrected before any code was written against it.
+
+Schema facts verified offline via `terraform providers schema -json`
+(azurerm 4.81.0): route association is the `cdn_frontdoor_custom_domain_ids`
+set **attribute** (no nested block); `azurerm_dns_txt_record` takes nested
+`record { value }` blocks; the CNAME `record` is a plain attribute; the custom
+domain supports `dns_zone_id` (in-zone ownership validation) and a `tls` block
+(`certificate_type`, `minimum_version`).
+
+Also added: `examples/workflows/deploy-manual.yml.example` — inert
+`workflow_dispatch`-only upload draft (must NEVER live under
+`.github/workflows/` without owner approval; pinned by tests). Deployment
+status: still NOT DEPLOYED; gated by `deploy_enabled=false` AND empty-string
+`dns_zone_name`.

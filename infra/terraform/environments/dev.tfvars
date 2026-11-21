@@ -4,3 +4,4 @@ deploy_enabled       = false
 location             = "canadacentral"
 waf_mode             = "Prevention"
 storage_account_name = "stsecurestatic01"
+dns_zone_name        = "example.com"

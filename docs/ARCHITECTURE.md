@@ -13,10 +13,15 @@ offline, deployed only after explicit approval.
 |---|---|---|
 | `modules/static_site_storage` | Storage account + `$web` static site (azapi child resource) | `public_network_access_enabled=false`, `https_traffic_only_enabled=true`, TLS 1.2 floor, no shared-key/SAS auth, no public blob ACLs |
 | `modules/frontdoor_premium` | AFD profile/endpoint/origin-group/origin/route + WAF policy + security-policy attachment | Premium SKU (required for private origins), HTTP→HTTPS redirect, `HttpsOnly` forwarding, managed rules (DefaultRuleSet 2.1, BotManager 1.0), custom rule blocking unsafe methods, cert name check on origin |
+| `modules/custom_domain` (invoked from inside frontdoor_premium) | Azure DNS zone + `afdverify` TXT + CNAME + AFD custom domain | In-zone ownership validation (`dns_zone_id`), managed certificate, TLS 1.2 floor (`minimum_version`), disabled unless `dns_zone_name` is non-empty |
 | `modules/github_oidc` | User-assigned identity + federated credential + role assignment | Subject pinned to `repo:…:ref:refs/heads/main`, audience `api://AzureADTokenExchange`, role scoped Storage Blob Data Contributor on this account only |
 
 The root module gates everything behind `deploy_enabled = false` (default), so
-`terraform plan` with defaults proposes zero resources.
+`terraform plan` with defaults proposes zero resources. `modules/custom_domain`
+is invoked from inside `frontdoor_premium` on purpose: a root-level two-way
+module wiring (route ← custom domain ← endpoint outputs) is a Terraform
+module-graph **Cycle** even though the resource graph is acyclic — found the
+hard way, evidence in docs/VALIDATION.md (2026-11-21).
 
 ## Trust boundaries
 

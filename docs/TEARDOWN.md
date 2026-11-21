@@ -7,7 +7,9 @@ exact resource inventory the root module would create:
 2. `module.storage`: storage account (LRS), blobServices `default` child (static
    website properties)
 3. `module.frontdoor`: AFD profile, endpoint, origin group, origin (private link
-   connection), route, firewall policy, security policy
+   connection), route, firewall policy, security policy; nested `custom_domain`
+   (only when `dns_zone_name` is set): DNS zone, `afdverify` TXT record, CNAME
+   record, AFD custom domain
 4. `module.github_oidc`: user-assigned identity, federated identity credential,
    Storage Blob Data Contributor role assignment
 

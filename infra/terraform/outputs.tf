@@ -12,3 +12,13 @@ output "deployment_identity_client_id" {
   description = "GitHub Actions OIDC client ID (AZURE_CLIENT_ID); null unless deploy_enabled is true."
   value       = one(module.github_oidc[*].client_id)
 }
+
+output "custom_domain_fqdn" {
+  description = "Validated custom hostname; null unless a dns_zone_name is set and deploy_enabled is true."
+  value       = one(module.frontdoor[*].custom_domain_fqdn)
+}
+
+output "dns_zone_name_servers" {
+  description = "Name servers for delegating dns_zone_name; null unless a dns_zone_name is set and deploy_enabled is true."
+  value       = one(module.frontdoor[*].dns_zone_name_servers)
+}

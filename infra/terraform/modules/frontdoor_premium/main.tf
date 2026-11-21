@@ -57,6 +57,8 @@ resource "azurerm_cdn_frontdoor_route" "this" {
   https_redirect_enabled        = true # HTTP -> HTTPS at the edge
   forwarding_protocol           = "HttpsOnly"
   link_to_default_domain        = true
+  # Custom domains (module/custom_domain) attach here once deployed.
+  cdn_frontdoor_custom_domain_ids = one(module.custom_domain[*].custom_domain_id)
 
   cache {
     query_string_caching_behavior = "IgnoreQueryString"
@@ -68,6 +70,21 @@ resource "azurerm_cdn_frontdoor_route" "this" {
       "image/svg+xml",
     ]
   }
+}
+
+# Optional custom domain (Azure DNS zone + validated AFD custom domain).
+# Kept as a nested module so the dependency stays one-directional: wiring this
+# at the root on both sides (route <- custom domain <- endpoint outputs) is a
+# module-graph Cycle in Terraform even though the resource graph is acyclic.
+module "custom_domain" {
+  count                   = var.dns_zone_name != "" ? 1 : 0
+  source                  = "../custom_domain"
+  resource_group_name     = var.resource_group_name
+  dns_zone_name           = var.dns_zone_name
+  subdomain               = var.custom_domain_subdomain
+  frontdoor_profile_id    = azurerm_cdn_frontdoor_profile.this.id
+  frontdoor_endpoint_fqdn = azurerm_cdn_frontdoor_endpoint.this.host_name
+  tags                    = var.tags
 }
 
 # WAF: managed rule sets + a custom deny for unsafe HTTP methods.

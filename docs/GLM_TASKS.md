@@ -15,13 +15,26 @@
 6. ✅ Pricing estimate (~$40/mo) in docs/COSTS.md; teardown inventory in
    docs/TEARDOWN.md — awaiting explicit owner review for anything live.
 
+## Custom-domain milestone — implemented 2026-11-21 (offline validation green)
+
+- [x] `custom-domain` module: Azure DNS zone + `afdverify` TXT + CNAME + AFD
+  custom domain (managed certificate, `minimum_version = "TLS12"`), wired to
+  the route via `cdn_frontdoor_custom_domain_ids`. Called NESTED from
+  `frontdoor_premium` — root-level mutual wiring is a Terraform module-graph
+  Cycle (real failure, docs/VALIDATION.md 2026-11-21). Double-gated:
+  `deploy_enabled` AND non-empty `dns_zone_name` (default disabled).
+- [x] Manual-trigger-only deploy workflow drafted as
+  `examples/workflows/deploy-manual.yml.example` — inert by location,
+  `workflow_dispatch`-only, OIDC (no stored secrets), includes the
+  private-origin upload caveat from docs/ARCHITECTURE.md.
+- [ ] Checkov/tflint CI job (pinned versions) — still deferred, image budget.
+
 ## Next milestone (offline, no approval needed)
 
-- Add a `custom-domain` module (Azure DNS zone + AFD custom domain +
-  certificate association) gated by `deploy_enabled`, with tests.
-- Draft a manual-trigger-only deploy workflow (workflow_dispatch, OIDC login,
-  upload to `$web` from a trusted runner) that stays dormant without secrets.
-- Add a Checkov/tflint job to CI (pinned versions) once image budget allows.
+- Apex (root-domain) support via `azurerm_dns_a_record` +
+  `target_resource_id` aliasing to the AFD endpoint — `www`-only today;
+  document the trade-off in the module.
+- Add the Checkov/tflint job once image budget allows.
 
 ## Live deployment (owner approval required first)
 

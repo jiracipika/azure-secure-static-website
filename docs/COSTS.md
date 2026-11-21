@@ -13,7 +13,7 @@ the Azure pricing calculator before approval — figures are indicative)
 | Storage account | Standard LRS, ~1 GB | <$1 |
 | Private Link on origin | AFD Premium private origin | included in Premium data processing |
 | User-assigned identity + role assignment | n/a | $0 |
-| DNS (future milestone: custom domain) | Azure DNS zone | ~$0.50/zone + queries |
+| DNS custom domain (implemented 2026-11-21, off unless `dns_zone_name` set) | Azure DNS zone + AFD managed cert | ~$0.50/zone + queries; managed cert $0 |
 
 Realistic lab floor: **≈ $40/month** while deployed, dominated by AFD Premium.
 

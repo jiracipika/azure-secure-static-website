@@ -27,7 +27,7 @@ terraform -chdir=infra/terraform init -backend=false -input=false
 terraform -chdir=infra/terraform validate
 ```
 
-All four pass locally (40 tests) and in CI; see docs/VALIDATION.md for the real
+All four pass locally (58 tests) and in CI; see docs/VALIDATION.md for the real
 output log, including the failures that were found and fixed.
 
 ## Source contents
@@ -39,10 +39,10 @@ output log, including the failures that were found and fixed.
 - `docs/VALIDATION.md`: real evidence only — actual commands and results
 - `docs/TEARDOWN.md`: resource inventory + approved cleanup plan
 - `diagrams/architecture.mmd`: editable Mermaid model with trust boundaries
-- `infra/terraform/`: root module + `modules/static_site_storage`, `modules/frontdoor_premium`, `modules/github_oidc`; everything gated by `deploy_enabled=false`
+- `infra/terraform/`: root module + `modules/static_site_storage`, `modules/frontdoor_premium` (nests `modules/custom_domain`: Azure DNS + managed-TLS custom hostname), `modules/github_oidc`; everything gated by `deploy_enabled=false`
 - `infra/terraform/environments/dev.tfvars`: offline-safe defaults
 - `.github/workflows/validate.yml`: offline validation, no deploy step
-- `tests/`: scaffold gates + 40-test security/accessibility regression suite
+- `tests/`: scaffold gates + 58-test security/accessibility/custom-domain regression suite
 - `app/`: responsive accessible demo website (index + 404 page)
 
 ## Status and safety

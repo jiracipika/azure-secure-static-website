@@ -30,6 +30,8 @@ module "frontdoor" {
   waf_mode                      = var.waf_mode
   origin_hostname               = one(module.storage[*].web_endpoint_hostname)
   origin_private_link_target_id = one(module.storage[*].storage_account_id)
+  dns_zone_name                 = var.dns_zone_name
+  custom_domain_subdomain       = var.custom_domain_subdomain
   tags                          = local.tags
 }
 

@@ -58,6 +58,18 @@ variable "origin_private_link_target_id" {
   type        = string
 }
 
+variable "dns_zone_name" {
+  description = "Public DNS zone for the custom domain; empty string disables the custom-domain wiring."
+  type        = string
+  default     = ""
+}
+
+variable "custom_domain_subdomain" {
+  description = "Host label under dns_zone_name that serves the site."
+  type        = string
+  default     = "www"
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

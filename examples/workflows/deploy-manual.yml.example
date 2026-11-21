@@ -1,0 +1,45 @@
+# DRAFT — manual-trigger-only site upload workflow. INERT BY LOCATION:
+# GitHub Actions never executes files outside .github/workflows/.
+#
+# Before copying this into .github/workflows/ you MUST have explicit owner
+# approval plus:
+#   - the OIDC pipeline deployed by infra/terraform (github_oidc module)
+#   - repo VARIABLES (not secrets): AZURE_CLIENT_ID, AZURE_TENANT_ID,
+#     AZURE_SUBSCRIPTION_ID, AZURE_STORAGE_ACCOUNT_NAME
+#
+# CAVEAT (see docs/ARCHITECTURE.md "Deployment path decision"): the storage
+# account deploys with public_network_access_enabled = false, so a standard
+# GitHub-hosted runner CANNOT reach the $web endpoint. This draft shows the
+# authentication shape (OIDC, no stored secrets); the blessed upload paths
+# (self-hosted runner inside the VNet, or an approved temporary trusted path)
+# are documented in docs/ARCHITECTURE.md. Never add a push trigger.
+
+name: Manual site upload (draft)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write # OIDC federation only; no stored secrets
+  contents: read
+
+jobs:
+  upload-site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Upload app/ to the $web container
+        run: |
+          az storage blob upload-batch \
+            --auth-mode login \
+            --account-name "$ACCOUNT_NAME" \
+            -d '$web' \
+            -s app/ \
+            --overwrite
+        env:
+          ACCOUNT_NAME: ${{ vars.AZURE_STORAGE_ACCOUNT_NAME }}
